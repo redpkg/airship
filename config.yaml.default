@@ -1,0 +1,34 @@
+log:
+    level: info
+    console: false
+
+redis:
+    host: localhost
+    port: 6379
+    password:
+    db: 0
+
+db:
+    writer:
+        host: localhost
+        port: 3306
+        username: root
+        password: root
+    readers:
+        - host: localhost
+          port: 3306
+          username: root
+          password: root
+    database: airship
+    timezone: UTC
+    conn_max_idle_time: 5m
+    conn_max_lifetime: 60m
+    max_idle_conns: 5
+    max_open_conns: 10
+
+project_prefix: auth
+http_server_addr: :9000
+grpc_server_addr: :50051
+session_ttl: 60m
+ticket_ttl: 5m
+jwt_secret: bLPQqR7bVcXh3Ppg9Urp9RN2qkUamev9
