@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"strconv"
+	"fmt"
 
 	goredis "github.com/go-redis/redis/v8"
 )
@@ -17,8 +17,12 @@ type Config struct {
 // New create redis instance
 func New(conf Config) (*goredis.Client, error) {
 	return goredis.NewClient(&goredis.Options{
-		Addr:     conf.Host + ":" + strconv.Itoa(conf.Port),
+		Addr:     buildAddress(conf.Host, conf.Port),
 		Password: conf.Password,
 		DB:       conf.DB,
 	}), nil
+}
+
+func buildAddress(host string, port int) string {
+	return fmt.Sprintf("%s:%d", host, port)
 }

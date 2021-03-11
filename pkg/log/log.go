@@ -1,7 +1,6 @@
 package log
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -16,24 +15,24 @@ type Config struct {
 	Console bool   `mapstructure:"console"`
 }
 
-func (c Config) level() (zerolog.Level, error) {
+func (c Config) level() zerolog.Level {
 	switch strings.ToLower(c.Level) {
 	case "debug":
-		return zerolog.DebugLevel, nil
+		return zerolog.DebugLevel
 	case "info":
-		return zerolog.InfoLevel, nil
+		return zerolog.InfoLevel
 	case "warn":
-		return zerolog.WarnLevel, nil
+		return zerolog.WarnLevel
 	case "error":
-		return zerolog.ErrorLevel, nil
+		return zerolog.ErrorLevel
 	case "fatal":
-		return zerolog.FatalLevel, nil
+		return zerolog.FatalLevel
 	case "panic":
-		return zerolog.PanicLevel, nil
-	case "no":
-		return zerolog.NoLevel, nil
+		return zerolog.PanicLevel
+	case "disabled":
+		return zerolog.Disabled
 	default:
-		return zerolog.Disabled, fmt.Errorf(`no level registered for name "%s"`, c.Level)
+		return zerolog.InfoLevel
 	}
 }
 
@@ -41,12 +40,7 @@ func (c Config) level() (zerolog.Level, error) {
 var logger zerolog.Logger
 
 // Init init log instance
-func Init(conf Config) error {
-	level, err := conf.level()
-	if err != nil {
-		return err
-	}
-
+func Init(conf Config) {
 	var w io.Writer
 	if conf.Console {
 		w = zerolog.ConsoleWriter{
@@ -58,62 +52,46 @@ func Init(conf Config) error {
 	}
 
 	logger = zerolog.New(w).
-		Level(level).
+		Level(conf.level()).
 		With().
 		Timestamp().
 		Logger()
-
-	return nil
 }
 
 // Debug starts a new message with debug level.
-//
-// You must call Msg on the returned event in order to send the event.
 func Debug() *zerolog.Event {
 	return logger.Debug()
 }
 
 // Info starts a new message with info level.
-//
-// You must call Msg on the returned event in order to send the event.
 func Info() *zerolog.Event {
 	return logger.Info()
 }
 
 // Warn starts a new message with warn level.
-//
-// You must call Msg on the returned event in order to send the event.
 func Warn() *zerolog.Event {
 	return logger.Warn()
 }
 
 // Error starts a new message with error level.
-//
-// You must call Msg on the returned event in order to send the event.
 func Error() *zerolog.Event {
 	return logger.Error()
 }
 
 // Err starts a new message with error level with err as a field if not nil or
 // with info level if err is nil.
-//
-// You must call Msg on the returned event in order to send the event.
 func Err(err error) *zerolog.Event {
 	return logger.Err(err)
 }
 
 // Fatal starts a new message with fatal level. The os.Exit(1) function
-// is called by the Msg method.
-//
-// You must call Msg on the returned event in order to send the event.
+// is called by the Msg method, which terminates the program immediately.
 func Fatal() *zerolog.Event {
 	return logger.Fatal()
 }
 
-// Panic starts a new message with panic level. The message is also sent
-// to the panic function.
-//
-// You must call Msg on the returned event in order to send the event.
+// Panic starts a new message with panic level. The panic() function
+// is called by the Msg method, which stops the ordinary flow of a goroutine.
 func Panic() *zerolog.Event {
 	return logger.Panic()
 }

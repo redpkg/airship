@@ -1,12 +1,10 @@
 package db
 
 import (
-	"net/url"
-	"strconv"
-	"strings"
+	"fmt"
 	"time"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
 )
@@ -16,11 +14,11 @@ type Config struct {
 	Writer          ConfigNode    `mapstructure:"writer"`
 	Readers         []ConfigNode  `mapstructure:"readers"`
 	Database        string        `mapstructure:"database"`
+	Timezone        string        `mapstructure:"timezone"`
 	ConnMaxIdleTime time.Duration `mapstructure:"conn_max_idle_time"`
 	ConnMaxLifetime time.Duration `mapstructure:"conn_max_lifetime"`
 	MaxIdleConns    int           `mapstructure:"max_idle_conns"`
 	MaxOpenConns    int           `mapstructure:"max_open_conns"`
-	Timezone        string        `mapstructure:"timezone"`
 }
 
 // ConfigNode database node config
@@ -45,13 +43,15 @@ func New(conf Config) (*gorm.DB, error) {
 		readers = append(readers, newDialector(confReader, conf))
 	}
 
-	if err := db.Use(dbresolver.Register(dbresolver.Config{
-		Replicas: readers,
-	}).
-		SetConnMaxIdleTime(conf.ConnMaxIdleTime).
-		SetConnMaxLifetime(conf.ConnMaxLifetime).
-		SetMaxIdleConns(conf.MaxIdleConns).
-		SetMaxOpenConns(conf.MaxOpenConns)); err != nil {
+	if err := db.Use(
+		dbresolver.Register(dbresolver.Config{
+			Replicas: readers,
+		}).
+			SetConnMaxIdleTime(conf.ConnMaxIdleTime).
+			SetConnMaxLifetime(conf.ConnMaxLifetime).
+			SetMaxIdleConns(conf.MaxIdleConns).
+			SetMaxOpenConns(conf.MaxOpenConns),
+	); err != nil {
 		return nil, err
 	}
 
@@ -59,23 +59,9 @@ func New(conf Config) (*gorm.DB, error) {
 }
 
 func newDialector(confNode ConfigNode, conf Config) gorm.Dialector {
-	return mysql.Open(buildDSN(confNode.Host, confNode.Port, confNode.Username, confNode.Password, conf.Database, conf.Timezone))
+	return postgres.Open(buildDSN(confNode.Host, confNode.Port, confNode.Username, confNode.Password, conf.Database, conf.Timezone))
 }
 
 func buildDSN(host string, port int, username, password, database, timezone string) string {
-	var s strings.Builder
-
-	s.WriteString(username)
-	s.WriteString(":")
-	s.WriteString(password)
-	s.WriteString("@tcp(")
-	s.WriteString(host)
-	s.WriteString(":")
-	s.WriteString(strconv.Itoa(port))
-	s.WriteString(")/")
-	s.WriteString(database)
-	s.WriteString("?parseTime=true&loc=")
-	s.WriteString(url.QueryEscape(timezone))
-
-	return s.String()
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable TimeZone=%s", host, port, username, password, database, timezone)
 }

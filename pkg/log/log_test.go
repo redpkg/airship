@@ -5,25 +5,19 @@ import (
 	"testing"
 
 	"github.com/redpkg/airship/pkg/log"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestInit(t *testing.T) {
-	assert := assert.New(t)
-
-	err := log.Init(log.Config{
-		Level:   "debug",
+	log.Init(log.Config{
+		Level:   "info",
 		Console: true,
 	})
-	if !assert.NoError(err) {
-		return
-	}
 
-	log.Debug().Msg("Debug")
-	log.Info().Msg("Info")
-	log.Warn().Msg("Warn")
-	log.Error().Msg("Error")
-	log.Err(errors.New("FOO")).Msg("Err")
-	// log.Fatal().Msg("Fatal")
-	// log.Panic().Msg("Panic")
+	log.Debug().Msg("debug message")
+	log.Info().Msg("info message")
+	log.Warn().Msg("warn message")
+	log.Error().Msg("error message")
+	log.Err(errors.New("foobar")).Msg("err message")
+	// log.Fatal().Msg("fatal")
+	// log.Panic().Msg("panic")
 }
