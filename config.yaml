@@ -26,9 +26,9 @@ db:
     max_idle_conns: 5
     max_open_conns: 10
 
-project_prefix: auth
+project_prefix: arsp
 http_server_addr: :9000
 grpc_server_addr: :50051
+jwt_secret: bLPQqR7bVcXh3Ppg9Urp9RN2qkUamev9
 session_ttl: 60m
 ticket_ttl: 5m
-jwt_secret: bLPQqR7bVcXh3Ppg9Urp9RN2qkUamev9

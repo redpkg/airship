@@ -1,12 +1,14 @@
 package log
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/pkgerrors"
 )
 
 // Config log config
@@ -15,24 +17,26 @@ type Config struct {
 	Console bool   `mapstructure:"console"`
 }
 
-func (c Config) level() zerolog.Level {
+func (c Config) level() (zerolog.Level, error) {
 	switch strings.ToLower(c.Level) {
+	case "trace":
+		return zerolog.TraceLevel, nil
 	case "debug":
-		return zerolog.DebugLevel
+		return zerolog.DebugLevel, nil
 	case "info":
-		return zerolog.InfoLevel
+		return zerolog.InfoLevel, nil
 	case "warn":
-		return zerolog.WarnLevel
+		return zerolog.WarnLevel, nil
 	case "error":
-		return zerolog.ErrorLevel
+		return zerolog.ErrorLevel, nil
 	case "fatal":
-		return zerolog.FatalLevel
+		return zerolog.FatalLevel, nil
 	case "panic":
-		return zerolog.PanicLevel
-	case "disabled":
-		return zerolog.Disabled
+		return zerolog.PanicLevel, nil
+	case "off", "no", "":
+		return zerolog.NoLevel, nil
 	default:
-		return zerolog.InfoLevel
+		return zerolog.NoLevel, fmt.Errorf("unknown level string: '%s'", c.Level)
 	}
 }
 
@@ -40,7 +44,15 @@ func (c Config) level() zerolog.Level {
 var logger zerolog.Logger
 
 // Init init log instance
-func Init(conf Config) {
+func Init(conf Config) error {
+	level, err := conf.level()
+	if err != nil {
+		return fmt.Errorf("unknown level string: '%s'", conf.Level)
+	}
+
+	zerolog.TimeFieldFormat = time.RFC3339
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+
 	var w io.Writer
 	if conf.Console {
 		w = zerolog.ConsoleWriter{
@@ -52,10 +64,17 @@ func Init(conf Config) {
 	}
 
 	logger = zerolog.New(w).
-		Level(conf.level()).
+		Level(level).
 		With().
 		Timestamp().
 		Logger()
+
+	return nil
+}
+
+// Trace starts a new message with trace level.
+func Trace() *zerolog.Event {
+	return logger.Trace()
 }
 
 // Debug starts a new message with debug level.

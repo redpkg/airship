@@ -21,9 +21,9 @@ type Config struct {
 	ProjectPrefix  string        `mapstructure:"project_prefix"`
 	HTTPServerAddr string        `mapstructure:"http_server_addr"`
 	GRPCServerAddr string        `mapstructure:"grpc_server_addr"`
+	JWTSecret      string        `mapstructure:"jwt_secret"`
 	SessionTTL     time.Duration `mapstructure:"session_ttl"`
 	TicketTTL      time.Duration `mapstructure:"ticket_ttl"`
-	JWTSecret      string        `mapstructure:"jwt_secret"`
 }
 
 // Init init config instance
