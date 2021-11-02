@@ -13,7 +13,6 @@ import (
 // Box contained config for public access
 var Box Config
 
-// Config app config
 type Config struct {
 	Log            log.Config    `mapstructure:"log"`
 	Redis          redis.Config  `mapstructure:"redis"`
@@ -26,7 +25,7 @@ type Config struct {
 	TicketTTL      time.Duration `mapstructure:"ticket_ttl"`
 }
 
-// Init init config instance
+// Init config instance
 func Init(files ...string) error {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("")

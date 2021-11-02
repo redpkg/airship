@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
 )
 
-// Config log config
 type Config struct {
 	Level   string `mapstructure:"level"`
 	Console bool   `mapstructure:"console"`
@@ -34,24 +34,27 @@ func (c Config) level() (zerolog.Level, error) {
 	case "panic":
 		return zerolog.PanicLevel, nil
 	case "off", "no", "":
-		return zerolog.NoLevel, nil
+		return zerolog.Disabled, nil
 	default:
-		return zerolog.NoLevel, fmt.Errorf("unknown level string: '%s'", c.Level)
+		return zerolog.NoLevel, fmt.Errorf("unknown level string '%s'", c.Level)
 	}
 }
 
-// Logger zerolog Logger
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+// zerolog instance
 var logger zerolog.Logger
 
-// Init init log instance
+// Init log instance
 func Init(conf Config) error {
 	level, err := conf.level()
 	if err != nil {
-		return fmt.Errorf("unknown level string: '%s'", conf.Level)
+		return err
 	}
 
-	zerolog.TimeFieldFormat = time.RFC3339
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	zerolog.InterfaceMarshalFunc = json.Marshal
+	zerolog.TimeFieldFormat = time.RFC3339
 
 	var w io.Writer
 	if conf.Console {

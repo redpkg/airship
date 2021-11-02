@@ -6,7 +6,6 @@ import (
 	goredis "github.com/go-redis/redis/v8"
 )
 
-// Config redis config
 type Config struct {
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`

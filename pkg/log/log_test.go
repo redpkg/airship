@@ -12,7 +12,7 @@ func TestInit(t *testing.T) {
 	assert := assert.New(t)
 
 	err := log.Init(log.Config{
-		Level:   "Trace",
+		Level:   "trace",
 		Console: true,
 	})
 	if !assert.NoError(err) {
